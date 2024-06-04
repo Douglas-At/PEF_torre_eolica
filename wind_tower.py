@@ -8,8 +8,13 @@ class WindCalculator:
         self.blade_length = blade_length
         self.tower_height = tower_height
         self.wind_speed = wind_speed
+        self.density = 3300
         self.cd = cd
         self.g = g
+    
+        self.dict_diagrama = {"m":{"funcs":self.function_m,"color":"rgba(0, 0, 255, 0.3)","titulo":"Diagrama de Momentos Fletores (M)","unidade":"Nm"},
+                              "v":{"funcs":self.function_v,"color":"rgba(0, 255, 0, 0.3)","titulo":"Diagrama de Forças Cortantes (V)","unidade":"N"},
+                              "n":{"funcs":self.function_n,"color":"rgba(255, 0, 0, 0.3)","titulo":"Diagrama de Forças Normais (N)","unidade":"N"}}
 
     def plot_turbine(self):
         angles = np.linspace(0, 2 * np.pi, 4)[:-1]
@@ -59,27 +64,13 @@ class WindCalculator:
         V = cd*g*v²(y-H)/2 # anexar resolução no papel 
         """
         return (self.cd*self.g*self.wind_function()**2 * (y - self.tower_height)) / 2
-
-    def plot_v(self):
-        y_values = np.linspace(0, self.tower_height, 500)
-        v_values = [self.function_v(y) for y in y_values]
-        max_abs_v = max(abs(min(v_values)), abs(max(v_values)))
-
-        traces = [go.Scatter(x=[0, 0], y=[0, self.tower_height], mode='lines', line=dict(color='black', width=5), name='Tower')]
-        traces.append(go.Scatter(x=v_values, y=y_values, mode='lines', line=dict(color='red')))
-
-        filled_area = go.Scatter(x=v_values + [0],y=y_values.tolist() + [y_values[0]],fill='tozerox',
-                                 fillpattern=dict(shape='\\'),mode='none' ,fillcolor='rgba(255, 0, 0, 0.3)')
-
-        layout = go.Layout(
-            title='Diagrama de Forças Cortantes (V)',
-            xaxis=dict(title='Força Cortante (V) [N]',showgrid=True,gridcolor='lightgrey',range=[-max_abs_v, max_abs_v]),
-            yaxis=dict(title='Altura [m]'),
-            height=600,
-            showlegend=False
-        )
-
-        return {'data': [filled_area] + traces, 'layout': layout}
+    
+    def function_n(self,y):
+        """
+        calculo de N no diagrama
+        N = d*g*(y-H)
+        """
+        return self.density*self.g*(y-self.tower_height)
 
     def function_m(self,y):
         """
@@ -88,10 +79,18 @@ class WindCalculator:
         """
         return self.cd * self.g * self.wind_function()**2 * (self.tower_height**2 / 4 - self.tower_height * y / 2 + y**2 / 4)
 
-
     def plot_m(self):
+        return self.generic_plot("m")
+    
+    def plot_n(self):
+        return self.generic_plot("n")
+    
+    def plot_v(self):
+        return self.generic_plot("v")
+
+    def generic_plot(self,diagrama):
         y_values = np.linspace(0, self.tower_height, 500)
-        m_values = [self.function_m(y) for y in y_values]
+        m_values = [self.dict_diagrama[diagrama]["funcs"](y) for y in y_values]
         max_abs_m = max(abs(min(m_values)), abs(max(m_values)))
 
         traces = [
@@ -105,14 +104,14 @@ class WindCalculator:
             x=m_values + [0],
             y=y_values.tolist() + [y_values[0]],
             fill='tozerox',
-            fillpattern=dict(shape='/', fgcolor='rgba(0, 0, 255, 0.3)'),  
+            fillpattern=dict(shape='/', fgcolor=self.dict_diagrama[diagrama]["color"]),  
             mode='none'
         )
 
         layout = go.Layout(
-            title='Diagrama de Momentos Fletores (M)',
+            title=f'{self.dict_diagrama[diagrama]['titulo']}',
             xaxis=dict(
-                title='Diagrama de Momentos Fletores (M) [Nm]',
+                title=f'{self.dict_diagrama[diagrama]['titulo']} [{self.dict_diagrama[diagrama]['unidade']}]',
                 showgrid=True,
                 gridcolor='lightgrey',
                 range=[-max_abs_m, max_abs_m]
@@ -125,5 +124,3 @@ class WindCalculator:
         )
 
         return {'data': [filled_area] + traces, 'layout': layout}
-
-
