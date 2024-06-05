@@ -11,6 +11,7 @@ class WindCalculator:
         self.density = 3300
         self.cd = cd
         self.g = g
+        self.raio = 2
     
         self.dict_diagrama = {"m":{"funcs":self.function_m,"color":"rgba(0, 0, 255, 0.3)","titulo":"Diagrama de Momentos Fletores (M)","unidade":"Nm"},
                               "v":{"funcs":self.function_v,"color":"rgba(0, 255, 0, 0.3)","titulo":"Diagrama de Forças Cortantes (V)","unidade":"N"},
@@ -30,8 +31,8 @@ class WindCalculator:
 
         layout = go.Layout(
             title='Wind Turbine',
-            xaxis=dict(title='X axis', range=[-self.blade_length - 10, self.blade_length + 10], showgrid=False),
-            yaxis=dict(title='Y axis', range=[0, self.tower_height + self.blade_length + 10], showgrid=False),
+            xaxis=dict(title='Eixo X [m]', range=[-self.blade_length - 10, self.blade_length + 10], showgrid=False),
+            yaxis=dict(title='Altura [m]', range=[0, self.tower_height + self.blade_length + 10], showgrid=False),
             showlegend=False,
             height=600
         )
@@ -61,9 +62,9 @@ class WindCalculator:
     def function_v(self,y):
         """
         calculo de v no diagrama
-        V = cd*g*v²(y-H)/2 # anexar resolução no papel 
+        V = cd*g*A*v²(y-H)/2 # anexar resolução no papel 
         """
-        return (self.cd*self.g*self.wind_function()**2 * (y - self.tower_height)) / 2
+        return (self.cd*self.g* (self.raio * 2 * self.tower_height ) *self.wind_function()**2 * (y - self.tower_height)) / 2
     
     def function_n(self,y):
         """
@@ -75,9 +76,9 @@ class WindCalculator:
     def function_m(self,y):
         """
         calculo de m no diagrama
-        m = cd*g*v²(H²/4 - Hy/2 + y²/4)
+        m = cd*g*A*v²(H²/4 - Hy/2 + y²/4)
         """
-        return self.cd * self.g * self.wind_function()**2 * (self.tower_height**2 / 4 - self.tower_height * y / 2 + y**2 / 4)
+        return self.cd * self.g * (self.raio * 2 * self.tower_height ) *self.wind_function()**2 * (self.tower_height**2 / 4 - self.tower_height * y / 2 + y**2 / 4)
 
     def plot_m(self):
         return self.generic_plot("m")
