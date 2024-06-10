@@ -30,8 +30,8 @@ class WindCalculator:
             traces.append(go.Scatter(x=[0, x], y=[self.tower_height, y], mode='lines', line=dict(color='blue', width=2), name='Blade'))
 
         layout = go.Layout(
-            title='Wind Turbine',
-            xaxis=dict(title='Eixo X [m]', range=[-self.blade_length - 10, self.blade_length + 10], showgrid=False),
+            title='Turbina Eolica',
+            xaxis=dict(title='Eixo X [m]', range=[-self.blade_length - 10, self.blade_length + 10], showgrid=False,scaleanchor='y',scaleratio=1),
             yaxis=dict(title='Altura [m]', range=[0, self.tower_height + self.blade_length + 10], showgrid=False),
             showlegend=False,
             height=600
